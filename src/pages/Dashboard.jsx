@@ -64,7 +64,7 @@ const Dashboard = () => {
     setIsProcessing(true);
 
     try {
-      const res = await api.get(`/queue/waiting-oldest/${profile.branchId}`);
+      const res = await api.get("/queue/oldest-waiting/cs");
       const nextQueue = res.data;
 
       setNextQueueData(nextQueue);

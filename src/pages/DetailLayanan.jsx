@@ -6,7 +6,9 @@ import api from "../utils/api";
 const DetailLayanan = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [queueData, setQueueData] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showDoneModal, setShowDoneModal] = useState(false);
 
   const currentDate = new Date().toLocaleDateString("id-ID", {
     weekday: "long",
@@ -16,18 +18,38 @@ const DetailLayanan = () => {
   });
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get("/cs/profile");
-        setProfile(res.data.cs);
+        const resProfile = await api.get("/cs/profile");
+        setProfile(resProfile.data.cs);
+
+        const resQueue = await api.get("/queue/inprogress/cs");
+        setQueueData(resQueue.data);
       } catch (error) {
-        console.error("Gagal mengambil profil:", error);
-        setErrorMsg("Gagal memuat data profil.");
+        console.error("Gagal mengambil data:", error);
+        setErrorMsg("Gagal memuat data. Silakan coba beberapa saat lagi.");
       }
     };
 
-    fetchProfile();
+    fetchData();
   }, []);
+
+  const handleDoneClick = () => {
+    setShowDoneModal(true);
+  };
+
+  const handleConfirmDone = async () => {
+    if (!queueData?.id) return alert("ID antrian tidak ditemukan.");
+    setShowDoneModal(false);
+    try {
+      await api.patch(`/queue/${queueData.id}/done`);
+      alert(`Antrian ${queueData.ticketNumber} telah selesai.`);
+      navigate("/cs-dashboard?refresh=true");
+    } catch (error) {
+      console.error("Gagal menyelesaikan antrian:", error);
+      alert("Gagal menyelesaikan antrian. Silakan coba lagi.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F7F6F2]">
@@ -61,34 +83,72 @@ const DetailLayanan = () => {
           {/* Box Kiri */}
           <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-6 text-left">
             <p className="text-lg mb-2 font-medium">
-              Antrian No : <span className="font-bold">001</span>
+              Nomor Tiket :{" "}
+              <span className="font-bold">
+                {queueData?.ticketNumber || "--"}
+              </span>
             </p>
             <p className="text-lg mb-2 font-medium">
               Nama :{" "}
               <span className="font-bold uppercase">
-                IBU BARBIE VIA SIANTAR
+                {queueData?.name || "--"}
               </span>
             </p>
-            <p className="text-lg font-medium">Keluhan :</p>
+            <p className="text-lg font-medium">Layanan :</p>
             <ul className="list-disc list-inside text-orange-500 mt-1 ml-3 space-y-1">
-              <li>BUKU HILANG</li>
-              <li>RISET PIN</li>
+              {queueData?.services?.length > 0 ? (
+                queueData.services.map((item, i) => (
+                  <li key={i}>{item.service?.serviceName || "-"}</li>
+                ))
+              ) : (
+                <li>-</li>
+              )}
             </ul>
           </div>
 
           {/* Box Kanan */}
           <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
-            <p className="text-sm mb-2">Antrian No :</p>
-            <p className="text-7xl text-orange-500 font-bold mb-4">001</p>
+            <p className="text-sm mb-2">Nomor Tiket :</p>
+            <p className="text-7xl text-orange-500 font-bold mb-4">
+              {queueData?.ticketNumber || "--"}
+            </p>
             <button
               className="bg-green-500 text-white px-4 py-5 rounded-md hover:bg-green-600 w-full cursor-pointer"
-              onClick={() => navigate("/cs-dashboard?refresh=true")}
+              onClick={handleDoneClick}
             >
               DONE
             </button>
           </div>
         </div>
       </div>
+
+      {showDoneModal && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl">
+            <h2 className="text-lg font-semibold mb-4 text-green-600">
+              Konfirmasi Selesai
+            </h2>
+            <p className="mb-6">
+              Apakah Anda yakin ingin <strong>MENYELESAIKAN</strong> antrian{" "}
+              <strong>{queueData?.ticketNumber}</strong>?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+                onClick={() => setShowDoneModal(false)}
+              >
+                Batal
+              </button>
+              <button
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded"
+                onClick={handleConfirmDone}
+              >
+                Ya
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
