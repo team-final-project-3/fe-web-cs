@@ -9,8 +9,6 @@ const Navbar = () => {
   const handleLogout = () => {
     // Hapus token dan informasi pengguna
     localStorage.removeItem("token");
-    localStorage.removeItem("csId");
-    localStorage.removeItem("role");
     localStorage.removeItem("username");
 
     // Redirect ke halaman login

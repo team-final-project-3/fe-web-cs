@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import LogoTemuNoBg from "../assets/logo_temu_no_bg.png";
+import LogoTemuNoBg from "../assets/temuCS long dark.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,8 +18,6 @@ const Login = () => {
       const { token, csId } = response.data;
 
       localStorage.setItem("token", token);
-      localStorage.setItem("csId", csId);
-      localStorage.setItem("role", "cs");
 
       navigate("/cs-dashboard");
     } catch (err) {
@@ -35,7 +33,7 @@ const Login = () => {
     <div className="bg-[#F6F5F2] h-screen flex flex-col justify-center items-center">
       <div className="cont w-80">
         <div className="flex justify-center mb-5">
-          <img src={LogoTemuNoBg} alt="logo" className="h-20" />
+          <img src={LogoTemuNoBg} alt="logo" className="h-45" />
         </div>
         <form className="flex flex-col gap-5" onSubmit={handleLogin}>
           <h1 className="text-center font-bold text-xl">Login CS</h1>
@@ -62,7 +60,7 @@ const Login = () => {
           />
           <button
             type="submit"
-            className="btn bg-[#F27F0C] uppercase text-white py-2 rounded hover:bg-[#d66d00]"
+            className="btn bg-[#F27F0C] uppercase text-white py-2 rounded hover:bg-[#d66d00] cursor-pointer"
           >
             Login
           </button>
