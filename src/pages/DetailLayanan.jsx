@@ -23,20 +23,32 @@ const DetailLayanan = () => {
         const resProfile = await api.get("/cs/profile");
         setProfile(resProfile.data.cs);
 
-        const resQueue = await api.get("/queue/inprogress/cs");
-        setQueueData(resQueue.data);
+        const resQueue = await api.get("/queue/cs/handling");
+
+        const normalized = {
+          id: resQueue.data.id,
+          ticketNumber: resQueue.data.ticketNumber,
+          name: resQueue.data.name,
+          services: resQueue.data.services.map((service) => ({
+            service: { serviceName: service },
+          })),
+        };
+
+        setQueueData(normalized);
       } catch (error) {
-        console.error("Gagal mengambil data:", error);
-        setErrorMsg("Gagal memuat data. Silakan coba beberapa saat lagi.");
+        if (error.response?.status === 404) {
+          setQueueData(null);
+        } else {
+          console.error("Gagal mengambil data:", error);
+          setErrorMsg("Gagal memuat data. Silakan coba beberapa saat lagi.");
+        }
       }
     };
 
     fetchData();
   }, []);
 
-  const handleDoneClick = () => {
-    setShowDoneModal(true);
-  };
+  const handleDoneClick = () => setShowDoneModal(true);
 
   const handleConfirmDone = async () => {
     if (!queueData?.id) return alert("ID antrian tidak ditemukan.");
@@ -79,50 +91,54 @@ const DetailLayanan = () => {
           </p>
         )}
 
-        <div className="flex flex-wrap gap-6">
-          {/* Box Kiri */}
-          <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-6 text-left">
-            <p className="text-lg mb-2 font-medium">
-              Nomor Tiket :{" "}
-              <span className="font-bold">
-                {queueData?.ticketNumber || "--"}
-              </span>
-            </p>
-            <p className="text-lg mb-2 font-medium">
-              Nama :{" "}
-              <span className="font-bold uppercase">
-                {queueData?.name || "--"}
-              </span>
-            </p>
-            <p className="text-lg font-medium">Layanan :</p>
-            <ul className="list-disc list-inside text-orange-500 mt-1 ml-3 space-y-1">
-              {queueData?.services?.length > 0 ? (
-                queueData.services.map((item, i) => (
-                  <li key={i}>{item.service?.serviceName || "-"}</li>
-                ))
-              ) : (
-                <li>-</li>
-              )}
-            </ul>
-          </div>
+        {!queueData ? (
+          <p className="text-center text-gray-500 text-lg mt-10">
+            Tidak ada antrian yang sedang diproses.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-6">
+            <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-6 text-left">
+              <p className="text-lg mb-2 font-medium">
+                Nomor Tiket:{" "}
+                <span className="font-bold">
+                  {queueData.ticketNumber || "--"}
+                </span>
+              </p>
+              <p className="text-lg mb-2 font-medium">
+                Nama:{" "}
+                <span className="font-bold uppercase">
+                  {queueData.name || "--"}
+                </span>
+              </p>
+              <p className="text-lg font-medium">Layanan:</p>
+              <ul className="list-disc list-inside text-orange-500 mt-1 ml-3 space-y-1">
+                {queueData.services.length > 0 ? (
+                  queueData.services.map((item, i) => (
+                    <li key={i}>{item.service?.serviceName || "-"}</li>
+                  ))
+                ) : (
+                  <li>-</li>
+                )}
+              </ul>
+            </div>
 
-          {/* Box Kanan */}
-          <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
-            <p className="text-sm mb-2">Nomor Tiket :</p>
-            <p className="text-7xl text-orange-500 font-bold mb-4">
-              {queueData?.ticketNumber || "--"}
-            </p>
-            <button
-              className="bg-green-500 text-white px-4 py-5 rounded-md hover:bg-green-600 w-full cursor-pointer"
-              onClick={handleDoneClick}
-            >
-              DONE
-            </button>
+            <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
+              <p className="text-sm mb-2">Nomor Tiket:</p>
+              <p className="text-7xl text-orange-500 font-bold mb-4">
+                {queueData.ticketNumber || "--"}
+              </p>
+              <button
+                className="bg-green-500 text-white px-4 py-5 rounded-md hover:bg-green-600 w-full cursor-pointer"
+                onClick={handleDoneClick}
+              >
+                DONE
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {showDoneModal && (
+      {showDoneModal && queueData && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl">
             <h2 className="text-lg font-semibold mb-4 text-green-600">
@@ -130,7 +146,7 @@ const DetailLayanan = () => {
             </h2>
             <p className="mb-6">
               Apakah Anda yakin ingin <strong>MENYELESAIKAN</strong> antrian{" "}
-              <strong>{queueData?.ticketNumber}</strong>?
+              <strong>{queueData.ticketNumber}</strong>?
             </p>
             <div className="flex justify-end gap-3">
               <button
