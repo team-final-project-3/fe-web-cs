@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalTicketNumber, setModalTicketNumber] = useState("");
   const [nextQueueData, setNextQueueData] = useState(null);
+  const [isCallingQueue, setIsCallingQueue] = useState(false);
 
   const currentDate = new Date().toLocaleDateString("id-ID", {
     weekday: "long",
@@ -78,13 +79,25 @@ const Dashboard = () => {
     }
   };
 
-  const handleModalConfirm = () => {
+  const handleModalConfirm = async () => {
     if (!nextQueueData) return;
-    localStorage.setItem("calledTicketNumber", nextQueueData.ticketNumber);
-    localStorage.setItem("calledTicketId", nextQueueData.id); // <== Tambahkan ini
-    setShowModal(false);
-    navigate("/cs-layanan");
+    setIsCallingQueue(true); // mulai loading
+
+    try {
+      await api.patch(`/queue/${nextQueueData.id}/call`);
+      localStorage.setItem("calledTicketNumber", nextQueueData.ticketNumber);
+      localStorage.setItem("calledTicketId", nextQueueData.id);
+
+      setShowModal(false);
+      navigate("/cs-layanan");
+    } catch (error) {
+      console.error("Gagal mengubah status antrian:", error);
+      alert("Terjadi kesalahan saat memanggil antrian.");
+    } finally {
+      setIsCallingQueue(false); // selesai loading
+    }
   };
+
   const handleModalCancel = () => {
     setShowModal(false);
   };
@@ -160,7 +173,7 @@ const Dashboard = () => {
 
             <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
               <p className="text-sm mb-2">Antrian No :</p>
-              <p className="text-7xl text-orange-500 font-bold mb-4">
+              <p className="text-5xl text-orange-500 font-bold mb-4">
                 {queues[0]?.ticketNumber || "--"}
               </p>
               <button
@@ -191,15 +204,26 @@ const Dashboard = () => {
             <div className="flex justify-center gap-4">
               <button
                 onClick={handleModalCancel}
-                className="bg-gray-400 hover:bg-gray-500 text-white font-semibold px-4 py-2 rounded"
+                disabled={isCallingQueue}
+                className={`${
+                  isCallingQueue
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-gray-400 hover:bg-gray-500"
+                } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
               >
                 Batal
               </button>
+
               <button
                 onClick={handleModalConfirm}
-                className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded"
+                disabled={isCallingQueue}
+                className={`${
+                  isCallingQueue
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-500 hover:bg-green-600"
+                } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
               >
-                OK
+                {isCallingQueue ? "Memproses..." : "OK"}
               </button>
             </div>
           </div>

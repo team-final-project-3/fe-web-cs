@@ -8,24 +8,27 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false); // ✅
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+    setLoading(true); // ✅ mulai loading
 
     try {
       const response = await api.post("cs/login", { username, password });
-      const { token, csId } = response.data;
+      const { token } = response.data;
 
       localStorage.setItem("token", token);
-
       navigate("/cs-dashboard");
     } catch (err) {
       if (err.response?.status === 401) {
-        setErrorMsg("Username atau password salah.");
+        setErrorMsg("Username atau password salah");
       } else {
         setErrorMsg("Terjadi kesalahan. Coba lagi nanti.");
       }
+    } finally {
+      setLoading(false); // ✅ selesai loading
     }
   };
 
@@ -60,9 +63,35 @@ const Login = () => {
           />
           <button
             type="submit"
-            className="btn bg-[#F27F0C] uppercase text-white py-2 rounded hover:bg-[#d66d00] cursor-pointer"
+            disabled={loading}
+            className={`btn uppercase text-white py-2 rounded flex justify-center items-center gap-2 ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#F27F0C] hover:bg-[#d66d00]"
+            }`}
           >
-            Login
+            {loading && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
+              </svg>
+            )}
+            {loading ? "Loading..." : "Login"}
           </button>
         </form>
       </div>

@@ -19,11 +19,26 @@ const Layanan = () => {
     const fetchData = async () => {
       try {
         const resProfile = await api.get("/cs/profile");
-        const csData = resProfile.data.cs;
-        setProfile(csData);
+        setProfile(resProfile.data.cs);
 
+        const resCalling = await api.get("/queue/cs/is-calling");
         const resQueue = await api.get("/queue/waiting/cs");
         setQueues(resQueue.data);
+        if (resCalling.data.isCalling) {
+          setCalledTicket(resCalling.data.ticketNumber);
+          setCalledTicketId(resCalling.data.queueId);
+        } else {
+          const resQueue = await api.get("/queue/waiting/cs");
+          setQueues(resQueue.data);
+
+          if (resQueue.data.length > 0) {
+            setCalledTicket(resQueue.data[0].ticketNumber);
+            setCalledTicketId(resQueue.data[0].id);
+          } else {
+            setCalledTicket("--");
+            setCalledTicketId(null);
+          }
+        }
       } catch (error) {
         console.error("Gagal mengambil data:", error);
         setErrorMsg("Gagal memuat data. Silakan coba beberapa saat lagi.");
@@ -33,16 +48,6 @@ const Layanan = () => {
     };
 
     fetchData();
-
-    const ticket = localStorage.getItem("calledTicketNumber");
-    const ticketId = localStorage.getItem("calledTicketId");
-    if (ticket) {
-      setCalledTicket(ticket);
-      setCalledTicketId(ticketId);
-      triggerNotification(ticket);
-      localStorage.removeItem("calledTicketNumber");
-      localStorage.removeItem("calledTicketId");
-    }
   }, []);
 
   const triggerNotification = (ticketNumber) => {
@@ -181,13 +186,8 @@ const Layanan = () => {
           <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
             <p className="text-sm mb-2">Antrian No :</p>
             <p className="text-7xl text-orange-500 font-bold mb-2">
-              {calledTicket || queues[0]?.ticketNumber || "--"}
+              {calledTicket || "--"}
             </p>
-            <p className="text-sm mb-4">
-              {queues[0]?.services?.map((s) => s.serviceName).join(", ") ||
-                "Layanan"}
-            </p>
-
             <button
               className="w-full bg-blue-500 text-white py-3 rounded-md mb-2 hover:bg-blue-600"
               onClick={handleRecallClick}
@@ -201,21 +201,16 @@ const Layanan = () => {
               SKIP
             </button>
             <button
-              className="w-full bg-green-500 text-white py-3 rounded-md mb-2 hover:bg-green-600"
+              className="w-full bg-green-500 text-white py-3 rounded-md hover:bg-green-600"
               onClick={handleTakeClick}
             >
               TAKE
-            </button>
-            <button
-              className="w-full bg-gray-500 text-white py-3 rounded-md hover:bg-gray-600"
-              onClick={() => navigate("/cs-dashboard?refresh=true")}
-            >
-              🔄 Kembali
             </button>
           </div>
         </div>
       </div>
 
+      {/* Modal Skip */}
       {showSkipModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl">
@@ -244,6 +239,7 @@ const Layanan = () => {
         </div>
       )}
 
+      {/* Modal Take */}
       {showTakeModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl">

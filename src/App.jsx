@@ -4,36 +4,56 @@ import Login from "./pages/Login";
 import Layanan from "./pages/Layanan";
 import DetailLayanan from "./pages/DetailLayanan";
 import ProtectedRoute from "./components/ProtectedRoute";
+import RouteWithQueueCheck from "./components/RouteWithQueueCheck";
+import RequireHandlingQueue from "./components/RequireHandlingQueue";
+import CheckCallingStatus from "./components/CheckCallingStatus"; // ✅ middleware baru
+import RequireIsCalling from "./components/RequireIsCalling";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Login terbuka */}
+        {/* Route Login - tidak diproteksi */}
         <Route path="/" element={<Login />} />
 
-        {/* Protected Routes */}
+        {/* Route CS Dashboard dengan is-calling check */}
         <Route
           path="/cs-dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <CheckCallingStatus>
+                <RouteWithQueueCheck>
+                  <Dashboard />
+                </RouteWithQueueCheck>
+              </CheckCallingStatus>
             </ProtectedRoute>
           }
         />
+
+        {/* Route CS Layanan - tanpa is-calling check */}
         <Route
           path="/cs-layanan"
           element={
             <ProtectedRoute>
-              <Layanan />
+              <RequireIsCalling>
+                <RouteWithQueueCheck>
+                  <Layanan />
+                </RouteWithQueueCheck>
+              </RequireIsCalling>
             </ProtectedRoute>
           }
         />
+
+        {/* Route CS Detail Layanan dengan is-calling check */}
         <Route
           path="/cs-detail-layanan"
           element={
             <ProtectedRoute>
-              <DetailLayanan />
+              <CheckCallingStatus>
+                <RequireHandlingQueue>
+                  <DetailLayanan />
+                </RequireHandlingQueue>
+              </CheckCallingStatus>
             </ProtectedRoute>
           }
         />
