@@ -26,6 +26,7 @@ const Layanan = () => {
         if (resCalling.data?.isCalling) {
           setCalledTicket(resCalling.data.ticketNumber);
           setCalledTicketId(resCalling.data.queueId);
+          triggerNotification(resCalling.data.ticketNumber); // Tambahan baris ini
         } else {
           if (resQueue.data.length > 0) {
             setCalledTicket(resQueue.data[0].ticketNumber);
@@ -85,13 +86,6 @@ const Layanan = () => {
       alert("Gagal mengambil antrian. Silakan coba lagi.");
     }
   };
-
-  const currentDate = new Date().toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
 
   return (
     <div className="min-h-screen bg-[#F7F6F2]">

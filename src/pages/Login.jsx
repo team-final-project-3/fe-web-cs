@@ -64,7 +64,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`btn uppercase text-white py-2 rounded flex justify-center items-center gap-2 ${
+            className={`btn uppercase text-white py-2 rounded flex justify-center items-center gap-2 cursor-pointer ${
               loading
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-[#F27F0C] hover:bg-[#d66d00]"
