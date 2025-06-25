@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import api from "../utils/api";
 import GreetingHeader from "../components/GreetingHeader";
+import QueueTable from "../components/QueueTable";
+import api from "../utils/api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [profile, setProfile] = useState(null);
+
   const [queues, setQueues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
@@ -17,44 +18,25 @@ const Dashboard = () => {
   const [nextQueueData, setNextQueueData] = useState(null);
   const [isCallingQueue, setIsCallingQueue] = useState(false);
 
-  const currentDate = new Date().toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-
-  const getTimeFromDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const resProfile = await api.get("/cs/profile");
-      const csData = resProfile.data.cs;
-      setProfile(csData);
-
-      const resQueue = await api.get("/queue/waiting/cs");
-      setQueues(resQueue.data);
-    } catch (error) {
-      console.error("Gagal mengambil data:", error);
-      setErrorMsg("Gagal memuat data. Silakan coba beberapa saat lagi.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const isRefresh = queryParams.get("refresh") === "true";
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const resQueue = await api.get("/queue/waiting/cs");
+        setQueues(resQueue.data);
+      } catch (error) {
+        console.error("Gagal mengambil data:", error);
+        setErrorMsg("Gagal memuat data. Silakan coba beberapa saat lagi.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchData();
 
-    // Jika soft-refresh, bersihkan URL setelah ambil data
     if (isRefresh) {
       const newUrl = window.location.pathname;
       window.history.replaceState({}, "", newUrl);
@@ -62,7 +44,7 @@ const Dashboard = () => {
   }, [location.search]);
 
   const handleNext = async () => {
-    if (isProcessing || !profile?.branchId) return;
+    if (isProcessing) return;
     setIsProcessing(true);
 
     try {
@@ -82,7 +64,7 @@ const Dashboard = () => {
 
   const handleModalConfirm = async () => {
     if (!nextQueueData) return;
-    setIsCallingQueue(true); // mulai loading
+    setIsCallingQueue(true);
 
     try {
       await api.patch(`/queue/${nextQueueData.id}/call`);
@@ -95,12 +77,8 @@ const Dashboard = () => {
       console.error("Gagal mengubah status antrian:", error);
       alert("Terjadi kesalahan saat memanggil antrian.");
     } finally {
-      setIsCallingQueue(false); // selesai loading
+      setIsCallingQueue(false);
     }
-  };
-
-  const handleModalCancel = () => {
-    setShowModal(false);
   };
 
   return (
@@ -108,11 +86,7 @@ const Dashboard = () => {
       <Navbar />
 
       <div className="p-6">
-        <GreetingHeader
-          branchName={profile?.branch?.name}
-          csName={profile?.name}
-          currentDate={currentDate}
-        />
+        <GreetingHeader />
 
         {errorMsg && (
           <p className="text-red-500 bg-red-100 px-4 py-2 rounded mb-4">
@@ -125,41 +99,7 @@ const Dashboard = () => {
         ) : (
           <div className="flex flex-wrap gap-6">
             <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-4">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left border-b">
-                    <th className="pb-2">UPCOMING</th>
-                    <th className="pb-2">TIME</th>
-                    <th className="pb-2">LAYANAN</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {queues.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan="3"
-                        className="text-center py-4 text-gray-400"
-                      >
-                        Belum ada antrian menunggu.
-                      </td>
-                    </tr>
-                  ) : (
-                    queues.map((row) => (
-                      <tr key={row.id} className="border-t">
-                        <td className="py-2">{row.ticketNumber}</td>
-                        <td className="py-2">
-                          {getTimeFromDate(row.bookingDate)}
-                        </td>
-                        <td className="py-2 truncate max-w-[250px]">
-                          {row.services
-                            .map((s) => s.serviceName || "-")
-                            .join(", ")}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+              <QueueTable queues={queues} />
             </div>
 
             <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
@@ -194,13 +134,13 @@ const Dashboard = () => {
             </p>
             <div className="flex justify-center gap-4">
               <button
-                onClick={handleModalCancel}
+                onClick={() => setShowModal(false)}
                 disabled={isCallingQueue}
                 className={`${
                   isCallingQueue
                     ? "bg-gray-300 cursor-not-allowed"
                     : "bg-gray-400 hover:bg-gray-500"
-                } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
+                } text-white font-semibold px-4 py-2 rounded`}
               >
                 Batal
               </button>
@@ -212,7 +152,7 @@ const Dashboard = () => {
                   isCallingQueue
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-green-500 hover:bg-green-600"
-                } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
+                } text-white font-semibold px-4 py-2 rounded`}
               >
                 {isCallingQueue ? "Memproses..." : "OK"}
               </button>

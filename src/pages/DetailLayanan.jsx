@@ -6,24 +6,13 @@ import GreetingHeader from "../components/GreetingHeader";
 
 const DetailLayanan = () => {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(null);
   const [queueData, setQueueData] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [showDoneModal, setShowDoneModal] = useState(false);
 
-  const currentDate = new Date().toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resProfile = await api.get("/cs/profile");
-        setProfile(resProfile.data.cs);
-
         const resQueue = await api.get("/queue/cs/handling");
 
         if (!resQueue.data.id) {
@@ -72,11 +61,7 @@ const DetailLayanan = () => {
       <Navbar />
 
       <div className="p-6">
-        <GreetingHeader
-          branchName={profile?.branch?.name}
-          csName={profile?.name}
-          currentDate={currentDate}
-        />
+        <GreetingHeader />
 
         {errorMsg && (
           <p className="text-red-500 bg-red-100 px-4 py-2 rounded mb-4">
