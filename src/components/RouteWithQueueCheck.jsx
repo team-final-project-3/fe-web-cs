@@ -37,15 +37,15 @@ const RouteWithQueueCheck = ({ children }) => {
       <div className="fixed inset-0 bg-black/10 backdrop-blur-sm z-50 flex items-center justify-center">
         <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl text-center">
           <h2 className="text-lg font-semibold mb-4 text-orange-600">
-            Peringatan
+            PERINGATAN
           </h2>
           <p className="mb-6">
-            Masih terdapat antrean yang <strong>belum Anda selesaikan</strong>.
+            Masih terdapat antrean yang <strong>BELUM ANDA SELESAIKAN</strong>.
             Mohon selesaikan terlebih dahulu.
           </p>
           <button
             onClick={() => navigate("/cs-detail-layanan")}
-            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded"
+            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded cursor-pointer"
           >
             OK
           </button>

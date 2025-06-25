@@ -48,7 +48,6 @@ const DetailLayanan = () => {
     setShowDoneModal(false);
     try {
       await api.patch(`/queue/${queueData.id}/done`);
-      alert(`Antrian ${queueData.ticketNumber} telah selesai.`);
       navigate("/cs-dashboard?refresh=true");
     } catch (error) {
       console.error("Gagal menyelesaikan antrian:", error);
@@ -102,7 +101,7 @@ const DetailLayanan = () => {
 
             <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
               <p className="text-sm mb-2">Nomor Tiket:</p>
-              <p className="text-7xl text-orange-500 font-bold mb-4">
+              <p className="text-5xl text-orange-500 font-bold mb-4">
                 {queueData.ticketNumber || "--"}
               </p>
               <button
@@ -120,21 +119,22 @@ const DetailLayanan = () => {
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl">
             <h2 className="text-lg font-semibold mb-4 text-green-600">
-              Konfirmasi Selesai
+              KONFIRMASI
             </h2>
-            <p className="mb-6">
-              Apakah Anda yakin ingin <strong>MENYELESAIKAN</strong> antrian{" "}
-              <strong>{queueData.ticketNumber}</strong>?
+            <p className="mb-6 text-center">
+              Apakah Anda yakin ingin <strong>MENYELESAIKAN</strong> antrian
+              <br />
+              <strong className="text-xl">{queueData.ticketNumber}</strong>?
             </p>
             <div className="flex justify-end gap-3">
               <button
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded cursor-pointer"
                 onClick={() => setShowDoneModal(false)}
               >
                 Batal
               </button>
               <button
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded"
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded cursor-pointer"
                 onClick={handleConfirmDone}
               >
                 Ya

@@ -97,13 +97,13 @@ const Dashboard = () => {
         {loading ? (
           <div className="text-center text-gray-500">Memuat data...</div>
         ) : (
-          <div className="flex flex-wrap gap-6">
-            <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-4">
+          <div className="flex flex-wrap gap-6 items-start">
+            <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-4 max-h-[600px] overflow-auto">
               <QueueTable queues={queues} />
             </div>
 
             <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
-              <p className="text-sm mb-2">Antrian No :</p>
+              <p className="text-sm mb-2">Antrian Selanjutnya :</p>
               <p className="text-5xl text-orange-500 font-bold mb-4">
                 {queues[0]?.ticketNumber || "--"}
               </p>
@@ -116,7 +116,7 @@ const Dashboard = () => {
                     : "bg-green-500 hover:bg-green-600 cursor-pointer"
                 } text-white px-10 py-4 text-lg font-semibold rounded-md w-full`}
               >
-                {isProcessing ? "Memproses..." : "NEXT"}
+                {isProcessing ? "Memproses..." : "PANGGIL ANTRIAN"}
               </button>
             </div>
           </div>
@@ -140,7 +140,7 @@ const Dashboard = () => {
                   isCallingQueue
                     ? "bg-gray-300 cursor-not-allowed"
                     : "bg-gray-400 hover:bg-gray-500"
-                } text-white font-semibold px-4 py-2 rounded`}
+                } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
               >
                 Batal
               </button>
@@ -152,9 +152,9 @@ const Dashboard = () => {
                   isCallingQueue
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-green-500 hover:bg-green-600"
-                } text-white font-semibold px-4 py-2 rounded`}
+                } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
               >
-                {isCallingQueue ? "Memproses..." : "OK"}
+                {isCallingQueue ? "Memproses..." : "Ya"}
               </button>
             </div>
           </div>

@@ -3,7 +3,7 @@ import api from "../utils/api";
 
 const GreetingHeader = () => {
   const [profile, setProfile] = useState(null);
-  const [currentDate, setCurrentDate] = useState("");
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -15,27 +15,29 @@ const GreetingHeader = () => {
       }
     };
 
-    const updateClock = () => {
-      const now = new Date();
-      const formattedDate = now.toLocaleDateString("id-ID", {
-        weekday: "long",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-      const time = now.toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      setCurrentDate(`${formattedDate}, ${time}`);
-    };
-
     fetchProfile();
-    updateClock();
-    const interval = setInterval(updateClock, 60000); // update tiap 1 menit
 
-    return () => clearInterval(interval);
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); // update tiap detik
+
+    return () => clearInterval(timer); // cleanup interval saat unmount
   }, []);
+
+  const formatDate = (date) =>
+    date.toLocaleDateString("id-ID", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+  const formatTime = (date) =>
+    date.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
 
   return (
     <div className="mb-4">
@@ -44,7 +46,8 @@ const GreetingHeader = () => {
           BNI KCU {profile?.branch?.name?.toUpperCase() || "Loading..."}
         </h2>
         <div className="text-sm text-gray-500 flex items-center gap-2">
-          <span className="text-lg">🕒</span> {currentDate}
+          <span className="text-lg">🕒</span>
+          {formatDate(currentTime)}, {formatTime(currentTime)}
         </div>
       </div>
 

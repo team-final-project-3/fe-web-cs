@@ -67,11 +67,10 @@ const Layanan = () => {
     if (!calledTicketId) return alert("ID tiket tidak ditemukan.");
     try {
       await api.patch(`/queue/${calledTicketId}/skip`);
-      alert(`Antrian ${calledTicket} telah di-skip.`);
       navigate("/cs-dashboard?refresh=true");
     } catch (error) {
       console.error("Gagal skip antrian:", error);
-      alert("Gagal skip antrian. Silakan coba lagi.");
+      alert("Terjadi kesalahan saat skip antrian. Silakan coba lagi.");
     }
   };
 
@@ -80,7 +79,6 @@ const Layanan = () => {
     if (!calledTicketId) return alert("ID tiket tidak ditemukan.");
     try {
       await api.patch(`/queue/${calledTicketId}/take`);
-      alert(`Antrian ${calledTicket} telah diambil.`);
       navigate("/cs-detail-layanan");
     } catch (error) {
       console.error("Gagal mengambil antrian:", error);
@@ -121,30 +119,30 @@ const Layanan = () => {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-6">
-          <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-4">
+        <div className="flex flex-wrap gap-6 items-start">
+          <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-4 max-h-[600px] overflow-auto">
             <QueueTable queues={queues} />
           </div>
 
           <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
             <p className="text-sm mb-2">Antrian No :</p>
-            <p className="text-7xl text-orange-500 font-bold mb-2">
+            <p className="text-5xl text-orange-500 font-bold mb-2">
               {calledTicket || "--"}
             </p>
             <button
-              className="w-full bg-blue-500 text-white py-3 rounded-md mb-2 hover:bg-blue-600"
+              className="w-full bg-blue-500 text-white py-3 rounded-md mb-2 hover:bg-blue-600 cursor-pointer"
               onClick={handleRecallClick}
             >
               🔊 Panggil Ulang
             </button>
             <button
-              className="w-full bg-red-500 text-white py-3 rounded-md mb-2 hover:bg-red-600"
+              className="w-full bg-red-500 text-white py-3 rounded-md mb-2 hover:bg-red-600 cursor-pointer"
               onClick={handleSkipClick}
             >
               SKIP
             </button>
             <button
-              className="w-full bg-green-500 text-white py-3 rounded-md hover:bg-green-600"
+              className="w-full bg-green-500 text-white py-3 rounded-md hover:bg-green-600 cursor-pointer"
               onClick={handleTakeClick}
             >
               TAKE
@@ -158,21 +156,22 @@ const Layanan = () => {
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl">
             <h2 className="text-lg font-semibold mb-4 text-red-600">
-              Konfirmasi Skip
+              KONFIRMASI
             </h2>
-            <p className="mb-6">
-              Apakah Anda yakin ingin <strong>SKIP</strong> antrian{" "}
-              <strong>{calledTicket}</strong>?
+            <p className="mb-6 text-center">
+              Apakah Anda yakin ingin <strong>SKIP</strong> antrian
+              <br />
+              <strong className="text-xl">{calledTicket}</strong>?
             </p>
             <div className="flex justify-end gap-3">
               <button
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded cursor-pointer"
                 onClick={() => setShowSkipModal(false)}
               >
                 Batal
               </button>
               <button
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded"
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded cursor-pointer"
                 onClick={handleSkipConfirm}
               >
                 Ya
@@ -187,21 +186,22 @@ const Layanan = () => {
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl">
             <h2 className="text-lg font-semibold mb-4 text-green-600">
-              Konfirmasi Take
+              KONFIRMASI
             </h2>
-            <p className="mb-6">
-              Apakah Anda yakin ingin <strong>mengambil</strong> antrian{" "}
-              <strong>{calledTicket}</strong>?
+            <p className="mb-6 text-center">
+              Apakah Anda yakin ingin <strong>mengambil</strong> antrian
+              <br />
+              <strong className="text-xl">{calledTicket}</strong>?
             </p>
             <div className="flex justify-end gap-3">
               <button
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded cursor-pointer"
                 onClick={() => setShowTakeModal(false)}
               >
                 Batal
               </button>
               <button
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded"
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded cursor-pointer"
                 onClick={handleTakeConfirm}
               >
                 Ya
