@@ -11,15 +11,16 @@ const RequireHandlingQueue = ({ children }) => {
   useEffect(() => {
     const checkHandling = async () => {
       try {
-        await api.get("/queue/cs/handling");
-        setAllow(true); // boleh masuk
-      } catch (error) {
-        if (error.response?.status === 404) {
-          setShowModal(true); // tidak ada antrian aktif
+        const res = await api.get("/queue/cs/handling");
+
+        // Jika tidak ada antrean yang sedang dikerjakan (semua null)
+        if (!res.data?.id) {
+          setShowModal(true);
         } else {
-          // hanya log jika bukan 404 (misal: 500, network error, dll)
-          console.error("Gagal mengecek antrean:", error);
+          setAllow(true); // boleh masuk
         }
+      } catch (error) {
+        console.error("Gagal mengecek antrean:", error);
       } finally {
         setChecking(false);
       }

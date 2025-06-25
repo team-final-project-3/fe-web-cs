@@ -11,15 +11,17 @@ const RouteWithQueueCheck = ({ children }) => {
   useEffect(() => {
     const checkQueue = async () => {
       try {
-        await api.get("/queue/cs/handling"); // jika 200, artinya ada antrian aktif
-        setShowWarning(true);
-      } catch (error) {
-        if (error.response?.status === 404) {
-          setAllowAccess(true); // ✅ 404 = tidak ada antrian = aman
+        const res = await api.get("/queue/cs/handling");
+
+        if (res.data?.id === null) {
+          // ✅ Tidak sedang menangani antrean
+          setAllowAccess(true);
         } else {
-          // ❗️hanya tampilkan error di console jika bukan 404
-          console.error("Gagal mengecek antrean aktif:", error);
+          // ❌ Sedang menangani antrean
+          setShowWarning(true);
         }
+      } catch (error) {
+        console.error("Gagal mengecek antrean aktif:", error);
       } finally {
         setChecking(false);
       }
@@ -28,7 +30,7 @@ const RouteWithQueueCheck = ({ children }) => {
     checkQueue();
   }, []);
 
-  if (checking) return null; // loading/skeleton bisa ditambahkan
+  if (checking) return null; // atau tampilkan spinner
 
   if (showWarning) {
     return (

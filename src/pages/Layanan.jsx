@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../utils/api";
+import GreetingHeader from "../components/GreetingHeader";
 
 const Layanan = () => {
   const navigate = useNavigate();
@@ -21,16 +22,14 @@ const Layanan = () => {
         const resProfile = await api.get("/cs/profile");
         setProfile(resProfile.data.cs);
 
-        const resCalling = await api.get("/queue/cs/is-calling");
+        const resCalling = await api.get("/queue/cs/called-customer");
         const resQueue = await api.get("/queue/waiting/cs");
         setQueues(resQueue.data);
-        if (resCalling.data.isCalling) {
+
+        if (resCalling.data?.isCalling) {
           setCalledTicket(resCalling.data.ticketNumber);
           setCalledTicketId(resCalling.data.queueId);
         } else {
-          const resQueue = await api.get("/queue/waiting/cs");
-          setQueues(resQueue.data);
-
           if (resQueue.data.length > 0) {
             setCalledTicket(resQueue.data[0].ticketNumber);
             setCalledTicketId(resQueue.data[0].id);
@@ -111,21 +110,11 @@ const Layanan = () => {
     <div className="min-h-screen bg-[#F7F6F2]">
       <Navbar />
       <div className="p-6">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-xl font-semibold">
-            BNI KCU {profile?.branch?.name?.toUpperCase() || "Loading..."}
-          </h2>
-          <div className="text-sm text-gray-500 flex items-center gap-2">
-            <span className="text-lg">🕒</span> {currentDate}
-          </div>
-        </div>
-
-        <p className="text-sm mb-4">
-          Hallo, Selamat Datang{" "}
-          <span className="font-semibold capitalize">
-            {profile?.name || "Loading..."}
-          </span>
-        </p>
+        <GreetingHeader
+          branchName={profile?.branch?.name}
+          csName={profile?.name}
+          currentDate={currentDate}
+        />
 
         {errorMsg && (
           <p className="text-red-500 bg-red-100 px-4 py-2 rounded mb-4">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../utils/api";
+import GreetingHeader from "../components/GreetingHeader";
 
 const DetailLayanan = () => {
   const navigate = useNavigate();
@@ -25,23 +26,26 @@ const DetailLayanan = () => {
 
         const resQueue = await api.get("/queue/cs/handling");
 
+        if (!resQueue.data.id) {
+          setQueueData(null);
+          return;
+        }
+
         const normalized = {
           id: resQueue.data.id,
           ticketNumber: resQueue.data.ticketNumber,
           name: resQueue.data.name,
-          services: resQueue.data.services.map((service) => ({
-            service: { serviceName: service },
-          })),
+          services: Array.isArray(resQueue.data.services)
+            ? resQueue.data.services.map((service) => ({
+                service: { serviceName: service },
+              }))
+            : [],
         };
 
         setQueueData(normalized);
       } catch (error) {
-        if (error.response?.status === 404) {
-          setQueueData(null);
-        } else {
-          console.error("Gagal mengambil data:", error);
-          setErrorMsg("Gagal memuat data. Silakan coba beberapa saat lagi.");
-        }
+        console.error("Gagal mengambil data:", error);
+        setErrorMsg("Gagal memuat data. Silakan coba beberapa saat lagi.");
       }
     };
 
@@ -68,22 +72,11 @@ const DetailLayanan = () => {
       <Navbar />
 
       <div className="p-6">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-xl font-semibold">
-            BNI KCU {profile?.branch?.name?.toUpperCase() || "Loading..."}
-          </h2>
-          <div className="text-sm text-gray-500 flex items-center gap-2">
-            <span className="text-lg">🕒</span>
-            {currentDate}
-          </div>
-        </div>
-
-        <p className="text-sm mb-4">
-          Hallo, Selamat Datang{" "}
-          <span className="font-semibold capitalize">
-            {profile?.name || "Loading..."}
-          </span>
-        </p>
+        <GreetingHeader
+          branchName={profile?.branch?.name}
+          csName={profile?.name}
+          currentDate={currentDate}
+        />
 
         {errorMsg && (
           <p className="text-red-500 bg-red-100 px-4 py-2 rounded mb-4">

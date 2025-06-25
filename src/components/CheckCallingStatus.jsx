@@ -1,4 +1,3 @@
-// src/middleware/CheckCallingStatus.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
@@ -10,21 +9,24 @@ const CheckCallingStatus = ({ children }) => {
   const [ticketNumber, setTicketNumber] = useState("");
 
   useEffect(() => {
-    const checkStatus = async () => {
+    const checkCalling = async () => {
       try {
-        const res = await api.get("/queue/cs/is-calling");
+        const res = await api.get("/queue/cs/called-customer");
+
         if (res.data?.isCalling) {
           setTicketNumber(res.data.ticketNumber);
           setShowModal(true);
+          setChecking(false); // ✅ Tambahkan agar modal bisa tampil
+        } else {
+          setChecking(false);
         }
       } catch (err) {
-        console.error("Gagal cek status is-calling", err);
-      } finally {
+        console.error("Gagal cek status antrean:", err);
         setChecking(false);
       }
     };
 
-    checkStatus();
+    checkCalling();
   }, []);
 
   const handleOk = () => {
@@ -41,7 +43,8 @@ const CheckCallingStatus = ({ children }) => {
             Peringatan
           </h2>
           <p className="mb-6">
-            Perlu tindakan pada antrean nomor <strong>{ticketNumber}</strong>
+            Perlu tindakan pada antrean nomor{" "}
+            <strong>{ticketNumber || "--"}</strong>
           </p>
           <button
             onClick={handleOk}
