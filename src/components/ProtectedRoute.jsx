@@ -1,15 +1,30 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import isTokenExpired from "../utils/isTokenExpired";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+  const [statusChecked, setStatusChecked] = useState(false);
 
-  // Jika tidak ada token, redirect ke halaman login
-  if (!token) {
-    return <Navigate to="/" replace />;
-  }
+  useEffect(() => {
+    const token = localStorage.getItem("token");
 
-  // Jika token ada, tampilkan halaman yang di-protect
+    if (!token) {
+      navigate("/", { replace: true });
+      return;
+    }
+
+    if (isTokenExpired(token)) {
+      navigate("/session-expired", { replace: true });
+      return;
+    }
+
+    setStatusChecked(true);
+  }, [navigate]);
+
+  // Jangan render apa pun sampai statusChecked selesai, kaladihapus console jadi rame eror pas session expired
+  if (!statusChecked) return null;
+
   return children;
 };
 

@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Layanan from "./pages/Layanan";
 import DetailLayanan from "./pages/DetailLayanan";
 import NotFoundPage from "./pages/NotFoundPage";
+import SessionExpired from "./pages/SessionExpired"; // Tambahkan ini
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import RouteWithQueueCheck from "./components/RouteWithQueueCheck";
@@ -17,10 +18,13 @@ function App() {
     <Router>
       <NetworkStatusHandler>
         <Routes>
-          {/* Login Page (Public) */}
+          {/* Login Page */}
           <Route path="/" element={<Login />} />
 
-          {/* Dashboard Page (Protected + Check Calling Status + Queue Check) */}
+          {/* Session Expired Page */}
+          <Route path="/session-expired" element={<SessionExpired />} />
+
+          {/* Dashboard Page */}
           <Route
             path="/cs-dashboard"
             element={
@@ -34,7 +38,7 @@ function App() {
             }
           />
 
-          {/* Layanan Page (Protected + IsCalling + Queue Check) */}
+          {/* Layanan Page */}
           <Route
             path="/cs-layanan"
             element={
@@ -48,7 +52,7 @@ function App() {
             }
           />
 
-          {/* Detail Layanan Page (Protected + CheckCallingStatus + Handling Queue) */}
+          {/* Detail Layanan Page */}
           <Route
             path="/cs-detail-layanan"
             element={
@@ -62,7 +66,7 @@ function App() {
             }
           />
 
-          {/* Catch All - 404 Not Found */}
+          {/* 404 Not Found */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </NetworkStatusHandler>

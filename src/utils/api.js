@@ -16,29 +16,29 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// (Opsional) Interceptor untuk handle error global (misalnya expired token)
+// Interceptor untuk handle token yang tidak valid atau expired
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Jangan redirect ke login jika sudah di halaman login
     const currentPath = window.location.pathname;
 
-    // Cek jika unauthorized dan bukan di halaman login
-    if (
-      error.response &&
-      error.response.status === 401 &&
-      currentPath !== "/"
-    ) {
-      console.warn("Unauthorized. Redirecting to login...");
-      window.location.href = "/";
+    const isOnAuthPage =
+      currentPath === "/" ||
+      currentPath === "/login" ||
+      currentPath === "/session-expired";
+
+    if (error.response && error.response.status === 401 && !isOnAuthPage) {
+      console.warn(
+        "Token expired or unauthorized. Redirecting to session-expired..."
+      );
+      localStorage.clear();
+      window.location.href = "/session-expired";
     }
 
-    return Promise.reject(error); // Penting agar bisa ditangani di komponen (seperti di Login.jsx)
+    return Promise.reject(error); // tetap lempar error agar bisa ditangani komponen
   }
 );
 
