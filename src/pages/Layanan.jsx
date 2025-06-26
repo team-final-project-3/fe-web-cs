@@ -15,6 +15,7 @@ const Layanan = () => {
   const [queues, setQueues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isRecalling, setIsRecalling] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +57,11 @@ const Layanan = () => {
 
   const handleRecallClick = () => {
     if (calledTicket) {
+      setIsRecalling(true); // mulai loading
       triggerNotification(calledTicket);
+      setTimeout(() => {
+        setIsRecalling(false); // stop loading setelah 3 detik
+      }, 3000);
     }
   };
 
@@ -70,8 +75,8 @@ const Layanan = () => {
       await api.patch(`/queue/${calledTicketId}/skip`);
       navigate("/cs-dashboard?refresh=true");
     } catch (error) {
-      console.error("Gagal skip antrian:", error);
-      alert("Terjadi kesalahan saat skip antrian. Silakan coba lagi.");
+      console.error("Gagal skip antrean:", error);
+      alert("Terjadi kesalahan saat skip antrean. Silakan coba lagi.");
     }
   };
 
@@ -82,8 +87,8 @@ const Layanan = () => {
       await api.patch(`/queue/${calledTicketId}/take`);
       navigate("/cs-detail-layanan");
     } catch (error) {
-      console.error("Gagal mengambil antrian:", error);
-      alert("Gagal mengambil antrian. Silakan coba lagi.");
+      console.error("Gagal mengambil antrean:", error);
+      alert("Gagal mengambil antrean. Silakan coba lagi.");
     }
   };
 
@@ -108,7 +113,7 @@ const Layanan = () => {
         >
           {calledTicket && (
             <div className="mb-4 bg-blue-100 border border-blue-300 text-blue-800 px-4 py-2 rounded shadow">
-              Sedang memanggil antrian <strong>{calledTicket}</strong>...
+              Sedang memanggil antrean <strong>{calledTicket}</strong>...
             </div>
           )}
         </div>
@@ -119,27 +124,55 @@ const Layanan = () => {
           </div>
 
           <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
-            <p className="text-sm mb-2">Antrian No :</p>
+            <p className="text-sm mb-2">Antrean No :</p>
             <p className="text-5xl text-orange-500 font-bold mb-2">
               {calledTicket || "--"}
             </p>
             <button
-              className="w-full bg-blue-500 text-white py-3 rounded-md mb-2 hover:bg-blue-600 cursor-pointer"
+              className={`w-full py-3 rounded-md mb-2 flex items-center justify-center gap-2 ${
+                isRecalling
+                  ? "bg-blue-300 cursor-not-allowed"
+                  : "bg-blue-500 hover:bg-blue-600 cursor-pointer"
+              } text-white`}
               onClick={handleRecallClick}
+              disabled={isRecalling}
             >
-              🔊 Panggil Ulang
+              {isRecalling && (
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
+                </svg>
+              )}
+              {isRecalling ? "Memanggil..." : "PANGGIL ULANG"}
             </button>
+
             <button
               className="w-full bg-red-500 text-white py-3 rounded-md mb-2 hover:bg-red-600 cursor-pointer"
               onClick={handleSkipClick}
             >
-              SKIP
+              TIDAK HADIR
             </button>
             <button
               className="w-full bg-green-500 text-white py-3 rounded-md hover:bg-green-600 cursor-pointer"
               onClick={handleTakeClick}
             >
-              TAKE
+              KERJAKAN
             </button>
           </div>
         </div>
@@ -153,9 +186,9 @@ const Layanan = () => {
               KONFIRMASI
             </h2>
             <p className="mb-6 text-center">
-              Apakah Anda yakin ingin <strong>SKIP</strong> antrian
+              Apakah anda yakin <strong>TIDAK HADIR</strong> antrean
               <br />
-              <strong className="text-xl">{calledTicket}</strong>?
+              <strong className="text-xl">{calledTicket}</strong>
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -183,9 +216,9 @@ const Layanan = () => {
               KONFIRMASI
             </h2>
             <p className="mb-6 text-center">
-              Apakah Anda yakin ingin <strong>mengambil</strong> antrian
+              Apakah Anda yakin ingin <strong>mengambil</strong> antrean
               <br />
-              <strong className="text-xl">{calledTicket}</strong>?
+              <strong className="text-xl">{calledTicket}</strong>
             </p>
             <div className="flex justify-end gap-3">
               <button

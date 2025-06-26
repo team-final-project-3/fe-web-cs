@@ -22,7 +22,7 @@ const QueueTable = ({ queues }) => {
         {queues.length === 0 ? (
           <tr>
             <td colSpan="3" className="text-center py-4 text-gray-400">
-              Belum ada antrian menunggu.
+              Belum ada antrean menunggu.
             </td>
           </tr>
         ) : (

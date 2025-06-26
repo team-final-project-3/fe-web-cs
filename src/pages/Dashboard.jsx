@@ -55,8 +55,8 @@ const Dashboard = () => {
       setModalTicketNumber(nextQueue.ticketNumber);
       setShowModal(true);
     } catch (error) {
-      console.error("Gagal memanggil antrian:", error);
-      alert("Terjadi kesalahan saat memanggil antrian.");
+      console.error("Gagal memanggil antrean:", error);
+      alert("Tidak ada antrean yang tersedia saat ini.");
     } finally {
       setIsProcessing(false);
     }
@@ -68,14 +68,13 @@ const Dashboard = () => {
 
     try {
       await api.patch(`/queue/${nextQueueData.id}/call`);
-      localStorage.setItem("calledTicketNumber", nextQueueData.ticketNumber);
-      localStorage.setItem("calledTicketId", nextQueueData.id);
 
       setShowModal(false);
       navigate("/cs-layanan");
     } catch (error) {
-      console.error("Gagal mengubah status antrian:", error);
-      alert("Terjadi kesalahan saat memanggil antrian.");
+      console.error("Gagal mengubah status antrean:", error);
+      alert("Terjadi kesalahan saat memanggil antrean. Silahkan coba lagi.");
+      window.location.reload(); // ⬅️ refresh halaman setelah alert ditutup
     } finally {
       setIsCallingQueue(false);
     }
@@ -103,7 +102,7 @@ const Dashboard = () => {
             </div>
 
             <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
-              <p className="text-sm mb-2">Antrian Selanjutnya :</p>
+              <p className="text-sm mb-2">Antrean Selanjutnya :</p>
               <p className="text-5xl text-orange-500 font-bold mb-4">
                 {queues[0]?.ticketNumber || "--"}
               </p>
@@ -116,7 +115,7 @@ const Dashboard = () => {
                     : "bg-green-500 hover:bg-green-600 cursor-pointer"
                 } text-white px-10 py-4 text-lg font-semibold rounded-md w-full`}
               >
-                {isProcessing ? "Memproses..." : "PANGGIL ANTRIAN"}
+                {isProcessing ? "Memproses..." : "PANGGIL ANTREAN"}
               </button>
             </div>
           </div>
@@ -127,7 +126,7 @@ const Dashboard = () => {
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/10 backdrop-blur-sm">
           <div className="bg-white rounded-lg shadow-lg border-2 border-orange-300 w-80 p-6 text-center">
             <h2 className="text-xl font-semibold mb-4 text-orange-600">
-              Apakah Anda Yakin Hendak Memanggil Antrian
+              Apakah Anda Yakin Hendak Memanggil Antrean
             </h2>
             <p className="text-lg mb-6">
               Nomor <span className="font-bold">{modalTicketNumber}</span>

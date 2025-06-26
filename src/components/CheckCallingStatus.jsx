@@ -40,7 +40,7 @@ const CheckCallingStatus = ({ children }) => {
       <div className="fixed inset-0 bg-black/10 backdrop-blur-sm z-50 flex items-center justify-center">
         <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl text-center">
           <h2 className="text-lg font-semibold mb-4 text-orange-600">
-            Peringatan
+            PERINGATAN
           </h2>
           <p className="mb-6">
             Perlu tindakan pada antrean nomor{" "}

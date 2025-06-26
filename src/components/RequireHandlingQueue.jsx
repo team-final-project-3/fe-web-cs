@@ -43,7 +43,7 @@ const RequireHandlingQueue = ({ children }) => {
             PERINGATAN
           </h2>
           <p className="mb-1">Tidak antrean yang sedang anda kerjakan</p>
-          <p className="mb-6">Anda akan dialihkan kembali ke Dashboard Home</p>
+          <p className="mb-6">Anda akan dialihkan kembali ke Halaman Awal</p>
           <button
             onClick={handleRedirect}
             className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded cursor-pointer"

@@ -44,14 +44,14 @@ const DetailLayanan = () => {
   const handleDoneClick = () => setShowDoneModal(true);
 
   const handleConfirmDone = async () => {
-    if (!queueData?.id) return alert("ID antrian tidak ditemukan.");
+    if (!queueData?.id) return alert("ID antrean tidak ditemukan.");
     setShowDoneModal(false);
     try {
       await api.patch(`/queue/${queueData.id}/done`);
       navigate("/cs-dashboard?refresh=true");
     } catch (error) {
-      console.error("Gagal menyelesaikan antrian:", error);
-      alert("Gagal menyelesaikan antrian. Silakan coba lagi.");
+      console.error("Gagal menyelesaikan antrean:", error);
+      alert("Gagal menyelesaikan antrean. Silakan coba lagi.");
     }
   };
 
@@ -70,7 +70,7 @@ const DetailLayanan = () => {
 
         {!queueData ? (
           <p className="text-center text-gray-500 text-lg mt-10">
-            Tidak ada antrian yang sedang diproses.
+            Tidak ada antrean yang sedang diproses.
           </p>
         ) : (
           <div className="flex flex-wrap gap-6">
@@ -108,7 +108,7 @@ const DetailLayanan = () => {
                 className="bg-green-500 text-white px-4 py-5 rounded-md hover:bg-green-600 w-full cursor-pointer"
                 onClick={handleDoneClick}
               >
-                DONE
+                SELESAI
               </button>
             </div>
           </div>
@@ -122,9 +122,9 @@ const DetailLayanan = () => {
               KONFIRMASI
             </h2>
             <p className="mb-6 text-center">
-              Apakah Anda yakin ingin <strong>MENYELESAIKAN</strong> antrian
+              Apakah anda yakin ingin <strong>MENYELESAIKAN</strong> antrean
               <br />
-              <strong className="text-xl">{queueData.ticketNumber}</strong>?
+              <strong className="text-xl">{queueData.ticketNumber}</strong>
             </p>
             <div className="flex justify-end gap-3">
               <button
