@@ -52,6 +52,7 @@ const DetailLayanan = () => {
     } catch (error) {
       console.error("Gagal menyelesaikan antrean:", error);
       alert("Gagal menyelesaikan antrean. Silakan coba lagi.");
+      window.location.reload();
     }
   };
 

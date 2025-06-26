@@ -77,6 +77,7 @@ const Layanan = () => {
     } catch (error) {
       console.error("Gagal skip antrean:", error);
       alert("Terjadi kesalahan saat skip antrean. Silakan coba lagi.");
+      window.location.reload();
     }
   };
 
@@ -89,6 +90,7 @@ const Layanan = () => {
     } catch (error) {
       console.error("Gagal mengambil antrean:", error);
       alert("Gagal mengambil antrean. Silakan coba lagi.");
+      window.location.reload();
     }
   };
 

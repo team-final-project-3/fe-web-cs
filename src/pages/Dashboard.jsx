@@ -57,6 +57,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Gagal memanggil antrean:", error);
       alert("Tidak ada antrean yang tersedia saat ini.");
+      window.location.reload();
     } finally {
       setIsProcessing(false);
     }
