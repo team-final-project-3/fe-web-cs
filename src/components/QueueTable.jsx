@@ -1,6 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import api from "../utils/api";
 
-const QueueTable = ({ queues }) => {
+const QueueTable = ({ onDataLoaded }) => {
+  const [queues, setQueues] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    const fetchQueues = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get("/queue/waiting/cs");
+        setQueues(res.data);
+        if (onDataLoaded) onDataLoaded(res.data); // kirim ke parent jika dibutuhkan
+      } catch (err) {
+        console.error("Gagal fetch data antrian:", err);
+        setErrorMsg("Gagal memuat antrean.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQueues();
+  }, []);
+
   const getTimeFromDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString("id-ID", {
@@ -8,6 +31,18 @@ const QueueTable = ({ queues }) => {
       minute: "2-digit",
     });
   };
+
+  if (loading) {
+    return <div className="text-gray-500 text-sm">Memuat antrean...</div>;
+  }
+
+  if (errorMsg) {
+    return (
+      <div className="text-red-500 bg-red-100 p-2 rounded text-sm">
+        {errorMsg}
+      </div>
+    );
+  }
 
   return (
     <table className="w-full text-sm">

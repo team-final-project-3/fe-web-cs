@@ -12,40 +12,30 @@ const Layanan = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [showSkipModal, setShowSkipModal] = useState(false);
   const [showTakeModal, setShowTakeModal] = useState(false);
-  const [queues, setQueues] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [isRecalling, setIsRecalling] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCalledCustomer = async () => {
       try {
         const resCalling = await api.get("/queue/cs/called-customer");
-        const resQueue = await api.get("/queue/waiting/cs");
-        setQueues(resQueue.data);
 
         if (resCalling.data?.isCalling) {
           setCalledTicket(resCalling.data.ticketNumber);
           setCalledTicketId(resCalling.data.queueId);
-          triggerNotification(resCalling.data.ticketNumber); // Tambahan baris ini
+          triggerNotification(resCalling.data.ticketNumber);
         } else {
-          if (resQueue.data.length > 0) {
-            setCalledTicket(resQueue.data[0].ticketNumber);
-            setCalledTicketId(resQueue.data[0].id);
-          } else {
-            setCalledTicket("--");
-            setCalledTicketId(null);
-          }
+          // Tidak melakukan fallback
+          setCalledTicket("--");
+          setCalledTicketId(null);
         }
       } catch (error) {
         console.error("Gagal mengambil data:", error);
         setErrorMsg("Gagal memuat data. Silakan coba beberapa saat lagi.");
-      } finally {
-        setLoading(false);
       }
     };
 
-    fetchData();
+    fetchCalledCustomer();
   }, []);
 
   const triggerNotification = (ticketNumber) => {
@@ -56,12 +46,12 @@ const Layanan = () => {
   };
 
   const handleRecallClick = () => {
-    if (calledTicket) {
-      setIsRecalling(true); // mulai loading
+    if (calledTicket && calledTicket !== "--") {
+      setIsRecalling(true);
       triggerNotification(calledTicket);
       setTimeout(() => {
-        setIsRecalling(false); // stop loading setelah 3 detik
-      }, 3000);
+        setIsRecalling(false);
+      }, 3500);
     }
   };
 
@@ -113,7 +103,7 @@ const Layanan = () => {
               : "opacity-0 -translate-y-5 pointer-events-none"
           }`}
         >
-          {calledTicket && (
+          {calledTicket && calledTicket !== "--" && (
             <div className="mb-4 bg-blue-100 border border-blue-300 text-blue-800 px-4 py-2 rounded shadow">
               Sedang memanggil antrean <strong>{calledTicket}</strong>...
             </div>
@@ -122,7 +112,7 @@ const Layanan = () => {
 
         <div className="flex flex-wrap gap-6 items-start">
           <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-4 max-h-[600px] overflow-auto">
-            <QueueTable queues={queues} />
+            <QueueTable />
           </div>
 
           <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
@@ -137,42 +127,48 @@ const Layanan = () => {
                   : "bg-blue-500 hover:bg-blue-600 cursor-pointer"
               } text-white`}
               onClick={handleRecallClick}
-              disabled={isRecalling}
+              disabled={isRecalling || !calledTicketId}
             >
-              {isRecalling && (
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8H4z"
-                  ></path>
-                </svg>
+              {isRecalling ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    ></path>
+                  </svg>
+                  Memanggil...
+                </>
+              ) : (
+                "PANGGIL ULANG"
               )}
-              {isRecalling ? "Memanggil..." : "PANGGIL ULANG"}
             </button>
 
             <button
               className="w-full bg-red-500 text-white py-3 rounded-md mb-2 hover:bg-red-600 cursor-pointer"
               onClick={handleSkipClick}
+              disabled={!calledTicketId}
             >
               TIDAK HADIR
             </button>
             <button
               className="w-full bg-green-500 text-white py-3 rounded-md hover:bg-green-600 cursor-pointer"
               onClick={handleTakeClick}
+              disabled={!calledTicketId}
             >
               KERJAKAN
             </button>

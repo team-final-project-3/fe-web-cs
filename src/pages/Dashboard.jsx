@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import GreetingHeader from "../components/GreetingHeader";
 import QueueTable from "../components/QueueTable";
@@ -7,41 +7,26 @@ import api from "../utils/api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const [queues, setQueues] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [nextQueue, setNextQueue] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [modalTicketNumber, setModalTicketNumber] = useState("");
-  const [nextQueueData, setNextQueueData] = useState(null);
   const [isCallingQueue, setIsCallingQueue] = useState(false);
 
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const isRefresh = queryParams.get("refresh") === "true";
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const resQueue = await api.get("/queue/waiting/cs");
-        setQueues(resQueue.data);
-      } catch (error) {
-        console.error("Gagal mengambil data:", error);
-        setErrorMsg("Gagal memuat data. Silakan coba beberapa saat lagi.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-
-    if (isRefresh) {
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, "", newUrl);
+  // Ambil data antrean selanjutnya
+  const fetchNextQueue = async () => {
+    try {
+      const res = await api.get("/queue/oldest-waiting/cs");
+      setNextQueue(res.data);
+    } catch (error) {
+      console.error("Gagal mengambil antrean selanjutnya:", error);
+      setNextQueue(null);
     }
-  }, [location.search]);
+  };
+
+  useEffect(() => {
+    fetchNextQueue();
+  }, []);
 
   const handleNext = async () => {
     if (isProcessing) return;
@@ -49,10 +34,9 @@ const Dashboard = () => {
 
     try {
       const res = await api.get("/queue/oldest-waiting/cs");
-      const nextQueue = res.data;
+      const queue = res.data;
 
-      setNextQueueData(nextQueue);
-      setModalTicketNumber(nextQueue.ticketNumber);
+      setNextQueue(queue);
       setShowModal(true);
     } catch (error) {
       console.error("Gagal memanggil antrean:", error);
@@ -64,18 +48,17 @@ const Dashboard = () => {
   };
 
   const handleModalConfirm = async () => {
-    if (!nextQueueData) return;
+    if (!nextQueue) return;
     setIsCallingQueue(true);
 
     try {
-      await api.patch(`/queue/${nextQueueData.id}/call`);
-
+      await api.patch(`/queue/${nextQueue.id}/call`);
       setShowModal(false);
       navigate("/cs-layanan");
     } catch (error) {
       console.error("Gagal mengubah status antrean:", error);
       alert("Terjadi kesalahan saat memanggil antrean. Silahkan coba lagi.");
-      window.location.reload(); // ⬅️ refresh halaman setelah alert ditutup
+      window.location.reload();
     } finally {
       setIsCallingQueue(false);
     }
@@ -88,39 +71,29 @@ const Dashboard = () => {
       <div className="p-6">
         <GreetingHeader />
 
-        {errorMsg && (
-          <p className="text-red-500 bg-red-100 px-4 py-2 rounded mb-4">
-            {errorMsg}
-          </p>
-        )}
-
-        {loading ? (
-          <div className="text-center text-gray-500">Memuat data...</div>
-        ) : (
-          <div className="flex flex-wrap gap-6 items-start">
-            <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-4 max-h-[600px] overflow-auto">
-              <QueueTable queues={queues} />
-            </div>
-
-            <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
-              <p className="text-sm mb-2">Antrean Selanjutnya :</p>
-              <p className="text-5xl text-orange-500 font-bold mb-4">
-                {queues[0]?.ticketNumber || "--"}
-              </p>
-              <button
-                onClick={handleNext}
-                disabled={isProcessing}
-                className={`${
-                  isProcessing
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-500 hover:bg-green-600 cursor-pointer"
-                } text-white px-10 py-4 text-lg font-semibold rounded-md w-full`}
-              >
-                {isProcessing ? "Memproses..." : "PANGGIL ANTREAN"}
-              </button>
-            </div>
+        <div className="flex flex-wrap gap-6 items-start">
+          <div className="flex-1 min-w-[60%] bg-white rounded-md shadow p-4 max-h-[600px] overflow-auto">
+            <QueueTable />
           </div>
-        )}
+
+          <div className="w-[300px] bg-white rounded-md shadow p-6 text-center flex flex-col items-center justify-center">
+            <p className="text-sm mb-2">Antrean Selanjutnya :</p>
+            <p className="text-5xl text-orange-500 font-bold mb-4">
+              {nextQueue?.ticketNumber || "--"}
+            </p>
+            <button
+              onClick={handleNext}
+              disabled={isProcessing}
+              className={`${
+                isProcessing
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-500 hover:bg-green-600 cursor-pointer"
+              } text-white px-10 py-4 text-lg font-semibold rounded-md w-full`}
+            >
+              {isProcessing ? "Memproses..." : "PANGGIL ANTREAN"}
+            </button>
+          </div>
+        </div>
       </div>
 
       {showModal && (
@@ -130,7 +103,7 @@ const Dashboard = () => {
               Apakah Anda Yakin Hendak Memanggil Antrean
             </h2>
             <p className="text-lg mb-6">
-              Nomor <span className="font-bold">{modalTicketNumber}</span>
+              Nomor <span className="font-bold">{nextQueue?.ticketNumber}</span>
             </p>
             <div className="flex justify-center gap-4">
               <button
