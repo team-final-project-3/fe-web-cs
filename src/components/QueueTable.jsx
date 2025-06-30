@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 import api from "../utils/api";
+
+const socket = io(import.meta.env.VITE_API_SOCKET);
 
 const QueueTable = ({ onDataLoaded }) => {
   const [queues, setQueues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Fetch data antrean
   useEffect(() => {
     const fetchQueues = async () => {
       try {
         setLoading(true);
         const res = await api.get("/queue/waiting/cs");
         setQueues(res.data);
-        if (onDataLoaded) onDataLoaded(res.data); // kirim ke parent jika dibutuhkan
+        if (onDataLoaded) onDataLoaded(res.data); // Kirim ke parent jika dibutuhkan
       } catch (err) {
         console.error("Gagal fetch data antrian:", err);
         setErrorMsg("Gagal memuat antrean.");
@@ -22,6 +26,24 @@ const QueueTable = ({ onDataLoaded }) => {
     };
 
     fetchQueues();
+
+    socket.on("queue:booked", (data) => {
+      console.log("Antrean baru dibooking:", data);
+
+      setQueues((prevQueues) => {
+        const newQueue = {
+          ticketNumber: data.ticketNumber,
+          status: data.status,
+          bookingDate: data.bookedAt || "-",
+          services: data.services || [],
+        };
+        return [newQueue, ...prevQueues];
+      });
+    });
+
+    return () => {
+      socket.off("queue:booked");
+    };
   }, []);
 
   const getTimeFromDate = (dateString) => {
@@ -62,7 +84,7 @@ const QueueTable = ({ onDataLoaded }) => {
           </tr>
         ) : (
           queues.map((row) => (
-            <tr key={row.id} className="border-t">
+            <tr key={row.ticketNumber} className="border-t">
               <td className="py-2">{row.ticketNumber}</td>
               <td className="py-2">{getTimeFromDate(row.bookingDate)}</td>
               <td className="py-2 truncate max-w-[250px]">
