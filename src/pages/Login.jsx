@@ -7,13 +7,14 @@ const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // 👁️ toggle
   const [errorMsg, setErrorMsg] = useState("");
-  const [loading, setLoading] = useState(false); // ✅
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg("");
-    setLoading(true); // ✅ mulai loading
+    setLoading(true);
 
     try {
       const response = await api.post("cs/login", { username, password });
@@ -28,7 +29,7 @@ const Login = () => {
         setErrorMsg("Terjadi kesalahan. Coba lagi nanti.");
       }
     } finally {
-      setLoading(false); // ✅ selesai loading
+      setLoading(false);
     }
   };
 
@@ -53,18 +54,68 @@ const Login = () => {
             onChange={(e) => setUsername(e.target.value)}
             required
           />
-          <input
-            className="input border px-3 py-2 rounded"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+
+          {/* Password input + eye toggle */}
+          <div className="relative">
+            <input
+              className="input border px-3 py-2 rounded w-full pr-10"
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              onClick={() => setShowPassword((prev) => !prev)}
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                // Eye open
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              ) : (
+                // Eye closed
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.98 8.223A10.477 10.477 0 002.458 12c1.274 4.057 5.065 7 9.542 7 2.042 0 3.946-.613 5.522-1.659M10.477 5.207A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.495 10.495 0 01-1.249 2.527M6.423 6.423L17.577 17.577M3 3l18 18"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className={`btn uppercase text-white py-2 rounded flex justify-center items-center gap-2 cursor-pointer ${
+            className={`uppercase text-white py-2 rounded flex justify-center items-center gap-2 cursor-pointer ${
               loading
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-[#F27F0C] hover:bg-[#d66d00]"
