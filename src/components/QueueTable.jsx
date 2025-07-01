@@ -4,47 +4,68 @@ import api from "../utils/api";
 
 const socket = io(import.meta.env.VITE_API_SOCKET);
 
-const QueueTable = ({ onDataLoaded }) => {
+const QueueTable = () => {
   const [queues, setQueues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+  const [branchIdCS, setBranchIdCS] = useState(null); // Tambahkan branchId CS
 
-  // Fetch data antrean
+  // Ambil branchId CS yang sedang login
   useEffect(() => {
-    const fetchQueues = async () => {
+    const fetchBranchId = async () => {
       try {
-        setLoading(true);
-        const res = await api.get("/queue/waiting/cs");
-        setQueues(res.data);
-        if (onDataLoaded) onDataLoaded(res.data); // Kirim ke parent jika dibutuhkan
+        const res = await api.get("/cs/profile");
+        const id = res.data.cs.branch.id;
+        setBranchIdCS(id);
       } catch (err) {
-        console.error("Gagal fetch data antrian:", err);
-        setErrorMsg("Gagal memuat antrean.");
-      } finally {
-        setLoading(false);
+        console.error("Gagal mengambil branchId CS:", err);
       }
     };
+
+    fetchBranchId();
+  }, []);
+
+  // Fungsi untuk fetch data antrian
+  const fetchQueues = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/queue/waiting/cs");
+      setQueues(res.data);
+    } catch (err) {
+      console.error("Gagal fetch data antrian:", err);
+      setErrorMsg("Gagal memuat antrean.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Saat branchIdCS sudah tersedia
+  useEffect(() => {
+    if (branchIdCS === null) return;
 
     fetchQueues();
 
     socket.on("queue:booked", (data) => {
       console.log("Antrean baru dibooking:", data);
 
-      setQueues((prevQueues) => {
-        const newQueue = {
-          ticketNumber: data.ticketNumber,
-          status: data.status,
-          bookingDate: data.bookedAt || "-",
-          services: data.services || [],
-        };
-        return [newQueue, ...prevQueues];
-      });
+      if (data.branchId !== branchIdCS) return; // Filter berdasarkan branch
+
+      const newQueue = {
+        ticketNumber: data.ticketNumber,
+        status: data.status,
+        bookingDate: data.bookedAt || "-",
+        services: data.services.map((s) =>
+          typeof s === "string" ? { serviceName: s } : s
+        ),
+      };
+
+      setQueues((prevQueues) => [newQueue, ...prevQueues]);
     });
 
     return () => {
       socket.off("queue:booked");
     };
-  }, []);
+  }, [branchIdCS]);
 
   const getTimeFromDate = (dateString) => {
     const date = new Date(dateString);

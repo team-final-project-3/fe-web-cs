@@ -19,7 +19,6 @@ const Dashboard = () => {
       const res = await api.get("/queue/oldest-waiting/cs");
       setNextQueue(res.data);
     } catch (error) {
-      console.error("Gagal mengambil antrean selanjutnya:", error);
       setNextQueue(null);
     }
   };
@@ -84,11 +83,10 @@ const Dashboard = () => {
             <button
               onClick={handleNext}
               disabled={isProcessing}
-              className={`${
-                isProcessing
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-500 hover:bg-green-600 cursor-pointer"
-              } text-white px-10 py-4 text-lg font-semibold rounded-md w-full`}
+              className={`${isProcessing
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-500 hover:bg-green-600 cursor-pointer"
+                } text-white px-10 py-4 text-lg font-semibold rounded-md w-full`}
             >
               {isProcessing ? "Memproses..." : "PANGGIL ANTREAN"}
             </button>
@@ -109,11 +107,10 @@ const Dashboard = () => {
               <button
                 onClick={() => setShowModal(false)}
                 disabled={isCallingQueue}
-                className={`${
-                  isCallingQueue
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-gray-400 hover:bg-gray-500"
-                } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
+                className={`${isCallingQueue
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-gray-400 hover:bg-gray-500"
+                  } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
               >
                 Batal
               </button>
@@ -121,11 +118,10 @@ const Dashboard = () => {
               <button
                 onClick={handleModalConfirm}
                 disabled={isCallingQueue}
-                className={`${
-                  isCallingQueue
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-500 hover:bg-green-600"
-                } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
+                className={`${isCallingQueue
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-500 hover:bg-green-600"
+                  } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
               >
                 {isCallingQueue ? "Memproses..." : "Ya"}
               </button>
