@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import Navbar from "../components/Navbar";
 import GreetingHeader from "../components/GreetingHeader";
 import QueueTable from "../components/QueueTable";
 import api from "../utils/api";
+
+const socket = io(import.meta.env.VITE_API_SOCKET);
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -12,6 +15,7 @@ const Dashboard = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isCallingQueue, setIsCallingQueue] = useState(false);
+  const [branchIdCS, setBranchIdCS] = useState(null); // BranchId untuk filter
 
   // Ambil data antrean selanjutnya
   const fetchNextQueue = async () => {
@@ -23,9 +27,46 @@ const Dashboard = () => {
     }
   };
 
+  // Ambil branch CS + fetch awal
   useEffect(() => {
-    fetchNextQueue();
+    const init = async () => {
+      try {
+        const res = await api.get("/cs/profile");
+        const id = res.data.cs.branch.id;
+        setBranchIdCS(id);
+        await fetchNextQueue();
+      } catch (error) {
+        console.error("Gagal mengambil branchId:", error);
+      }
+    };
+
+    init();
   }, []);
+
+  // Socket listener: jika ada perubahan antrean
+  useEffect(() => {
+    if (!branchIdCS) return;
+
+    const handleCalled = (data) => {
+      if (data.branchId === branchIdCS) {
+        fetchNextQueue();
+      }
+    };
+
+    const handleBooked = (data) => {
+      if (data.branchId === branchIdCS) {
+        fetchNextQueue();
+      }
+    };
+
+    socket.on("queue:called", handleCalled);
+    socket.on("queue:booked", handleBooked);
+
+    return () => {
+      socket.off("queue:called", handleCalled);
+      socket.off("queue:booked", handleBooked);
+    };
+  }, [branchIdCS]);
 
   const handleNext = async () => {
     if (isProcessing) return;
@@ -84,8 +125,8 @@ const Dashboard = () => {
               onClick={handleNext}
               disabled={isProcessing}
               className={`${isProcessing
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-500 hover:bg-green-600 cursor-pointer"
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-500 hover:bg-green-600 cursor-pointer"
                 } text-white px-10 py-4 text-lg font-semibold rounded-md w-full`}
             >
               {isProcessing ? "Memproses..." : "PANGGIL ANTREAN"}
@@ -108,8 +149,8 @@ const Dashboard = () => {
                 onClick={() => setShowModal(false)}
                 disabled={isCallingQueue}
                 className={`${isCallingQueue
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-gray-400 hover:bg-gray-500"
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-gray-400 hover:bg-gray-500"
                   } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
               >
                 Batal
@@ -119,8 +160,8 @@ const Dashboard = () => {
                 onClick={handleModalConfirm}
                 disabled={isCallingQueue}
                 className={`${isCallingQueue
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-500 hover:bg-green-600"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-500 hover:bg-green-600"
                   } text-white font-semibold px-4 py-2 rounded cursor-pointer`}
               >
                 {isCallingQueue ? "Memproses..." : "Ya"}

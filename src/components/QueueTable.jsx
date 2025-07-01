@@ -8,7 +8,7 @@ const QueueTable = () => {
   const [queues, setQueues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
-  const [branchIdCS, setBranchIdCS] = useState(null); // Tambahkan branchId CS
+  const [branchIdCS, setBranchIdCS] = useState(null);
 
   // Ambil branchId CS yang sedang login
   useEffect(() => {
@@ -39,16 +39,20 @@ const QueueTable = () => {
     }
   };
 
-  // Saat branchIdCS sudah tersedia
   useEffect(() => {
     if (branchIdCS === null) return;
 
     fetchQueues();
 
-    socket.on("queue:booked", (data) => {
-      console.log("Antrean baru dibooking:", data);
+    const refreshIfSameBranch = (data) => {
+      if (data.branchId === branchIdCS) {
+        fetchQueues();
+      }
+    };
 
-      if (data.branchId !== branchIdCS) return; // Filter berdasarkan branch
+    // Saat antrean baru dibooking
+    socket.on("queue:booked", (data) => {
+      if (data.branchId !== branchIdCS) return;
 
       const newQueue = {
         ticketNumber: data.ticketNumber,
@@ -59,11 +63,19 @@ const QueueTable = () => {
         ),
       };
 
-      setQueues((prevQueues) => [newQueue, ...prevQueues]);
+      setQueues((prev) => [newQueue, ...prev]);
     });
+
+    // Listener perubahan status
+    socket.on("queue:called", refreshIfSameBranch);
+    socket.on("queue:skipped", refreshIfSameBranch);
+    socket.on("queue:in-progress", refreshIfSameBranch);
 
     return () => {
       socket.off("queue:booked");
+      socket.off("queue:called", refreshIfSameBranch);
+      socket.off("queue:skipped", refreshIfSameBranch);
+      socket.off("queue:in-progress", refreshIfSameBranch);
     };
   }, [branchIdCS]);
 
