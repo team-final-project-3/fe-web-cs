@@ -63,19 +63,26 @@ const QueueTable = () => {
         ),
       };
 
-      setQueues((prev) => [newQueue, ...prev]);
+      setQueues((prev) =>
+        [...prev, newQueue].sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate))
+      );
     });
 
     // Listener perubahan status
     socket.on("queue:called", refreshIfSameBranch);
     socket.on("queue:skipped", refreshIfSameBranch);
     socket.on("queue:in-progress", refreshIfSameBranch);
-
+    socket.on("queue:status-updated", (data) => {
+      setQueues((prev) =>
+        prev.filter((queue) => queue.ticketNumber !== data.ticketNumber)
+      );
+    });
     return () => {
       socket.off("queue:booked");
       socket.off("queue:called", refreshIfSameBranch);
       socket.off("queue:skipped", refreshIfSameBranch);
       socket.off("queue:in-progress", refreshIfSameBranch);
+      socket.off("queue:status-updated");
     };
   }, [branchIdCS]);
 
